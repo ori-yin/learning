@@ -1,0 +1,97 @@
+桑基图绘制
+方法1（需先处理数据)
+from pyecharts.charts import Sankey    # 导入pyecharts库
+import pandas as pd 
+from pyecharts import options as opts
+
+df = pd.read_excel('G:\杂七杂八\桑基图学习\桑基图.xlsx')    # pandas读取文件
+
+
+节点 = []    # 创建节点，制作桑基图的骨架
+for i in range(2):    # 遍历节点需要的列数，一般为两列
+    values = df.iloc[:,i].unique()    # 获取唯一的节点名
+    for value in values:    # 遍历节点名字为一个字典
+        dic = {}    # 创建空字典
+        dic['name'] = value
+        节点.append(dic)    # append用于给列表末尾不断加新的数据
+
+连边 = []    # 创建连边，用于绘制流量变动
+for i in df.values:    # 遍历表中的数据
+    dic = {}    # 创建空字典
+    dic['source'] = i[0]    # 桑基图源头 = 第零列
+    dic['target'] = i[1]    # 流量流至 = 第一列
+    dic['value'] = i[2]    # 具体数值 = 第二列
+    连边.append(dic)    # append用于给列表末尾不断加新的数据
+
+桑基图 = (
+    Sankey(init_opts=opts.InitOpts(width='900px',height='500px',theme='westeros',page_title= "可视化"))
+# 设置width宽height高，和theme风格
+    .add('',    # 图列名称
+    节点,    # 传入节点数据
+    连边,    # 传入连边数据
+    linestyle_opt = opts.LineStyleOpts(opacity = 0.3,curve=0.5,color='source'),
+    label_opts = opts.LabelOpts(position = 'right'),
+    node_gap = 30,
+).set_global_opts(title_opts = opts.TitleOpts(title = '熬夜数据'))    # title标题名称
+)
+桑基图.render('G:\杂七杂八\桑基图学习\桑基图.html')    # 保存到本地目录
+print('桑基图绘制成功!')
+
+方法2（边处理边可视化）
+# 数据类型：除了最后一列外，其他列必须为"分类数据"，最后一列用于计数
+from pyecharts import options as opts    # 导入pyecharts包
+from pyecharts.charts import Sankey    # 导入桑基图
+import pandas as pd    # 导入pandas
+
+路径 = 'G:\杂七杂八\桑基图学习\桑基图3.xlsx'    # 确定文件路径
+data = pd.read_excel(路径,sheet_name='Sheet2')    # pandas读取文件下的sheet
+
+# 生成：父类 → 子类 → 值
+lis = data.columns.tolist()[:-1]    # 取所有列名创建列表，除需要 统计计算 的数据
+lis1 = lis[:-1]    # 取父类至子类最后一列的前一个
+lis2 = lis[1:]    # 取除父类外的所有子类
+
+data1 = pd.DataFrame()
+for i in zip(lis1,lis2):    # zip可将两个列表上下进行连接***
+    透视表 = data.pivot_table('数值',index=list(i),aggfunc='count').reset_index()
+    # 透视表pivot_table(需要聚合运算的数值，index=索引标签，aggfunc=聚合方式)
+    透视表.columns=[0,1,2]    # 透视表的列重命名
+    data1 = data1.append(透视表)    # 重命名列后表叠加在一起
+
+# 生成节点数据，注意！！！非常重要，不同列之间不能有相同的节点名称！！！
+节点 = []
+节点.append({'name':'个人商用'})    # 先添加第零列的父节点，所有父节点必须填
+节点.append({'name':'个人下载'})    # 先添加第零列的父节点，所有父节点必须填
+节点.append({'name':'企业商用'})    # 先添加第零列的父节点，所有父节点必须填
+for i in data1[1].unique():    # 添加其他节点
+    dic = {}    # 创建空字典
+    dic['name'] = i    # 字典名字与节点相关联
+    节点.append(dic)    # append用于给列表末尾不断加新的数据
+
+# 生成连接数据
+连接 = []
+for i in data1.values:    # 遍历表中的数据
+    dic = {}    # 创建空字典
+    dic['source'] = i[0]    # 桑基图的源头 = 第零列
+    dic['target'] = i[1]    # 流量路径 = 第一列
+    dic['value'] = i[2]    # 具体数值 = 第二列
+    连接.append(dic)    # append用于给列表末尾不断加新的数据
+
+# 开始画图啦！
+桑基图 = (
+    Sankey(init_opts=opts.InitOpts(width="1920px", height="1080px",theme='light',page_title= "可视化"))
+    # width设置宽度，height设置高度
+    # theme主题风格：light,dark,chalk,essos,infographic,macarons,shine,walden,westeros
+    .add(
+        "",
+        nodes=节点,
+        links=连接,
+        orient='horizontal',    # 'horizontal'=水平，'vertical'=垂直
+        linestyle_opt=opts.LineStyleOpts(opacity=0.4, curve=0.5, color="source"),
+        # opacity=不透明度，curve=弯曲度
+        label_opts=opts.LabelOpts(position="right"),
+    )
+    .set_global_opts(title_opts=opts.TitleOpts(title='主标题',subtitle='副标题'))    # 标题名称
+) 
+桑基图.render('G:\杂七杂八\桑基图学习\桑基图.html')    # 保存到本地
+print('桑基图绘制完毕!')
