@@ -1,0 +1,16 @@
+import pandas as pd
+import jieba
+
+# 读取Excel文件
+df = pd.read_excel("D:\\垃圾桶二号\\千图加关键词.xlsx", dtype={"第一列名称": str})
+
+# 对每一行中文句子进行分词
+for i, row in df.iterrows():
+    sentence = row["第一列名称"]
+    cut_words = jieba.cut(sentence)
+    cut_sentence = " ".join(cut_words)
+    df.at[i, "分词结果"] = cut_sentence
+
+# 将分词结果保存到Excel文件中
+df.to_excel("D:\\垃圾桶二号\\完成.xlsx", index=False)
+
