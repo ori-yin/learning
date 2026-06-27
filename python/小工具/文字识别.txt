@@ -1,0 +1,18 @@
+import easyocr
+import os
+
+# 实例化easyocr
+reader = easyocr.Reader(['ch_sim', 'en'], gpu = False)    # 识别中英文，不用GPU
+
+files_path = 'D:\ori-learn\shibie'    # 文件路径
+file = os.listdir(files_path)    # OS模块读取路径下文件
+
+li = []
+
+for i in file:
+    real_url = os.path.join(files_path,i)
+    result = reader.readtext(real_url,detail=0)
+    s = ' '.join(result)
+    li.append(s)
+    
+print(li)
