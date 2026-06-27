@@ -1,0 +1,30 @@
+Sub InsertImagesFromURLs()
+    Dim ws As Worksheet
+    Dim rngURLs As Range
+    Dim cell As Range
+    Dim pictureIndex As Integer
+
+    ' 设置要操作的工作表
+    Set ws = ThisWorkbook.Sheets("Sheet1") '请将"Sheet1"替换为你的工作表名称
+
+    ' 设置要处理的URL范围，假设URL在第一列（A列）
+    Set rngURLs = ws.Range("A1:A" & ws.Cells(ws.Rows.Count, "A").End(xlUp).Row)
+
+    ' 循环处理每个URL
+    For Each cell In rngURLs
+        ' 获取图片
+        Set pic = ws.Pictures.Insert(cell.Value)
+
+        ' 调整图片大小和位置
+        With pic
+            .ShapeRange.LockAspectRatio = msoFalse
+            .Width = 100 ' 图片宽度（根据需要调整）
+            .Height = 100 ' 图片高度（根据需要调整）
+            .Top = cell.Top
+            .Left = cell.Offset(0, 1).Left ' 将图片放在URL列的右边（相邻列）
+        End With
+
+        ' 递增图片索引
+        pictureIndex = pictureIndex + 1
+    Next cell
+End Sub
