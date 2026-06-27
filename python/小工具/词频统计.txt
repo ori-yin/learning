@@ -1,0 +1,91 @@
+词频统计
+方法1
+import jieba    # 调用jieba库
+
+txt = open('740879160.txt','r',encoding='UTF-8').read()    # 打开文件open，r只读，encoding转化编码
+
+words = jieba.lcut(txt)    # jieba库的方法lcut分词
+
+count = {}    # 赋值变量等于字典
+for word in words:    # 遍历分词后的结果
+    if len(word) == 1:    # word是遍历后的结果，当len(word)等于1的时候跳过继续循环
+        continue    # continue是跳过，break是终止循环
+    else:
+        count[word] = count.get(word,0) +1    # 匹配到则+1，否则+0
+
+item = list(count.items())    # 由于字典没有排序sort，所以转化为列表list
+item.sort(key=lambda x:x[1],reverse=True)    # lambda表达式，按key排序，reverse=True为升序
+
+for i in range(500):    # 遍历前N个
+    word,count = item[i]    # word=key,count=value，字典键值对赋值
+    # print('{0:<10}{1:>5}'.format(word,count))    # 输出结束，网上抄的，不理解做法
+    print(f'{word}:{count}')    # 输出结果，可以替换：以便后期分列
+------------------------------------------------------------------------------------
+方法2（更快）
+import jieba    # 导入库
+
+txt = open(f'G:\杂七杂八\951026.txt','r',encoding='UTF=8').read()    # open打开文件，r只读，编码转化UTF=8
+
+txt2 = jieba.lcut(txt)    # lcut进行分词
+
+miao = {}    # 赋值一个空字典
+for i in txt2:    # 遍历分词结果
+    if len(i) == 1:    # 筛选遍历结果，等于1的continue跳过
+        continue
+    else:
+        miao[i] = miao.get(i,0) +1    # 满足条件的get到一个加1，否则加0
+
+x = sorted(miao.items(),key=lambda x:x[1] ,reverse=True)    # 字典排序，items用于输出字典键值对
+
+# for y,z in x:    # 新建x,y变量，并遍历排序后的x，x=keys,y=values
+#   print(f'{y}={z}')   # 等号可以替换，方便后期分组
+
+x2 =pd.DataFrame(data=x,columns=['关键词','次数'],index=None)
+x2.to_csv('G:\杂七杂八\桑基图学习\词云图.csv')    # 保持到本地文件
+print(x2)
+print('导出成功')
+------------------------------------------------------------------------------------
+方法3（带条件求和）
+import jieba
+import pandas as pd
+
+# 读取CSV文件，包含标题和下载次数两列
+data = pd.read_csv('C:\\Users\\HCKJ\\Desktop\\插画.csv',encoding='GBK')
+
+# 分词后条件求和的列改为int格式
+data['下载次数'] = data['下载次数'].astype(int)
+
+# 创建空字典用于存储词频和条件求和
+word_freq = {}
+likes_sum = {}
+
+# 遍历每一行数据
+for index, row in data.iterrows():
+    sentence = row['标题']
+    likes = row['下载次数']
+
+    # 使用jieba分词
+    words = jieba.lcut(sentence)
+
+    # 统计词频
+    for word in words:
+        if word not in word_freq:
+            word_freq[word] = 0
+        word_freq[word] += 1
+
+        # 根据条件求和相应词频的条件求和
+        if word not in likes_sum:
+            likes_sum[word] = 0
+        likes_sum[word] += likes
+
+# 将词频和条件求和转化为DataFrame
+result = pd.DataFrame({'标题': list(word_freq.keys()),
+                       '频率': list(word_freq.values()),
+                       '条件求和': [likes_sum[word] for word in word_freq.keys()]})
+
+# 按频率降序排序
+result = result.sort_values(by='条件求和', ascending=False)
+result = result.reset_index(drop=True)
+
+# 输出结果
+result.to_csv('C:\\Users\\HCKJ\\Desktop\\结果.csv')
