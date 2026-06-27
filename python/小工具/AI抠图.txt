@@ -1,0 +1,8 @@
+from removebg import RemoveBg
+import os
+
+rmbg = RemoveBg('zyQPXmW5UoGxxLZ8CNmYV9ir', 'error.log')    # remove(API需要去官网创建,)
+dirs = os.listdir('D:\\奥里\\图片')    # 需要遍历的文件夹路径
+
+for dir in dirs:
+    rmbg.remove_background_from_img_file(f'D:\\奥里\\图片\\{dir}')    # 循环遍历
