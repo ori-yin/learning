@@ -1,0 +1,39 @@
+数据库取数
+方法1（pymysql）
+import pandas as pd    # 导入panda库
+import pymysql    # 导入python的SQL模块
+
+def 导出CSV(sql,csv_name):    # 定义函数，函数做用为SQL，文件名称
+    连接数据库 = pymysql.connect(
+        host='rm-uf682f339t62un7u6io.mysql.rds.aliyuncs.com'    # 服务器主机名称
+        ,user='ori'    # 账号
+        ,password='Ywf12345'    # 密码
+        ,database='ddm'    # 数据库名
+        ,charset='utf8')    # 编码方式
+    读取文件 = pd.read_sql(sql, con=连接数据库)
+    读取文件.to_csv(csv_name)
+    连接数据库.close()
+    print('导出完成，殷文峰牛皮')
+
+# 下面输入SQL语句
+导出CSV("""
+select 品牌ID
+,平台
+,曝光人数
+from shop
+limit 50
+    """,'测试.csv')
+
+方法2（sqlalchemy）
+import pandas as pd
+from sqlalchemy import create_engine
+
+链接数据库 = create_engine('mysql+pymysql://ori:Ywf12345@rm-uf682f339t62un7u6io.mysql.rds.aliyuncs.com/ddm')
+
+SQL语句 = """
+select * from shop
+"""
+
+输出 = pd.read_sql(sql=SQL语句,con=链接数据库)    # pandas的read_sql函数
+
+输出.to_csv('G:\杂七杂八\测试数据.csv',index=False)    # 输入你要保存的路径，和文件名
