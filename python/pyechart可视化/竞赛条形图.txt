@@ -1,0 +1,47 @@
+动态条形图
+方法1（pyechart）
+# 一列数值型的日期，一列分类，一列需要累加的值，一列十六进制颜色
+import pandas as pd
+
+路径 = 'G:\杂七杂八\桑基图学习\条形图.xlsx'
+df = pd.read_excel(路径)
+
+from pyecharts import options as opts
+from pyecharts.charts import Bar,Timeline
+
+动态条形图 = Timeline(init_opts=opts.InitOpts
+(width="1920px", height="900px",theme='light',page_title='千库网'))    # 时间轴赋值
+
+# for循环提取个时间的数据
+for i in range(1,25):    # 编辑需要的横轴长度，前闭后开
+    df['累加2'] = df.groupby(['分类'])['充值金额'].cumsum()   # 如果累计数据没有算，可以直接用这个累计求和groupby()[col]
+    df_sub = df[df['日']== i].sort_values('累加2')    # 如果数据依据处理过的有累加，把sort_values改为累加结果的col
+    cats_list = list(df_sub['分类'])    # 分为做成24个列表
+    csum_list = list(df_sub['累加2'])    # 累加做成24个列表
+    color_list = list(df_sub['颜色'])    # 颜色做成24个列表
+
+    颜色 = []
+    for j in range(10):    # 几个分类填几个
+        颜色.append(
+            opts.BarItem(
+                name=cats_list[j],    # 坐标名赋值
+                value=csum_list[j],    # 累加赋值
+                itemstyle_opts=opts.ItemStyleOpts(color=color_list[j]),    # 颜色赋值
+            )
+        )
+
+    配置 = (
+        Bar()
+        .add_xaxis(cats_list)    # X轴设置，下面是Y轴设置，category_gap柱子宽度
+        .add_yaxis('', 颜色 ,label_opts=opts.LabelOpts(position="right",font_weight="bold"),category_gap=15)
+        .reversal_axis()    # 倒置，可以改为柱形图
+        .set_global_opts(
+            title_opts=opts.TitleOpts(f"各分类充值金额 (时间: {i} 日)",pos_left=350,padding=[30,20]),
+            xaxis_opts=opts.AxisOpts(max_=310000)    # 填累加数值的MAX值
+        )
+    )
+    动态条形图.add(配置, "{}日".format(i))
+    动态条形图.add_schema(play_interval=300, is_loop_play=True)    #播放间隔，是否循环播放
+
+动态条形图.render('G:\杂七杂八\桑基图学习\动态.html')
+print('动态条形图绘制完成！')
